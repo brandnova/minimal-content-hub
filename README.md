@@ -74,7 +74,7 @@ hub/
 │   │   ├── tailwind.css
 │   │   └── ckeditor5.css
 │   └── js/
-│       └── htmx.js
+│       └── htmx.min.js
 ├── media/                   # Uploaded files (gitignored)
 ├── .env                     # Secret config (gitignored)
 ├── .env.example             # Safe template to commit
@@ -90,7 +90,7 @@ hub/
 ### 1. Clone and create environment
 
 ```bash
-git clone https://github.com/yourname/hub.git
+git clone https://github.com/brandnova/minimal-content-hub.git
 cd hub
 python3.11 -m venv venv
 source venv/bin/activate       # Windows: venv\Scripts\activate

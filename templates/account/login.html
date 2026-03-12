@@ -1,38 +1,74 @@
 {% extends "base.html" %}
-{% load allauth %}
 
-{% block title %}Log in{% endblock %}
+{% block title %}Log in — {{ site.site_name }}{% endblock %}
 
 {% block content %}
 <div class="max-w-sm mx-auto">
+
     <div class="mb-8 border-b border-gray-800 pb-6">
         <p class="text-xs uppercase tracking-widest text-gray-600 mb-1">Welcome back</p>
         <h1 class="text-xl font-bold text-white">Log in</h1>
     </div>
+
+    {% if messages %}
+    {% for msg in messages %}
+    <div class="mb-4 border px-4 py-3 text-xs uppercase tracking-widest
+        {% if msg.tags == 'error' %}text-red-400 border-red-900{% else %}text-green-400 border-green-900{% endif %}">
+        {{ msg }}
+    </div>
+    {% endfor %}
+    {% endif %}
+
     <form method="POST">
         {% csrf_token %}
         {% for field in form %}
-        <div class="mb-4">
-            <label class="block text-xs uppercase tracking-widest text-gray-600 mb-1">{{ field.label }}</label>
-            <input type="{{ field.field.widget.input_type }}"
-                   name="{{ field.html_name }}"
-                   id="{{ field.id_for_label }}"
-                   {% if field.value %}value="{{ field.value }}"{% endif %}
-                   class="w-full bg-gray-900 border border-gray-800 focus:border-gray-600 outline-none px-3 py-2 text-sm text-gray-200 transition"
-                   autocomplete="{{ field.html_name }}">
-            {% if field.errors %}
-            <p class="text-xs text-red-400 mt-1">{{ field.errors|join:", " }}</p>
+            {% if field.html_name == 'remember' %}
+                {# Render remember me as a proper labelled checkbox #}
+                <div class="mb-4 flex items-center gap-3">
+                    <input type="checkbox"
+                           name="{{ field.html_name }}"
+                           id="{{ field.id_for_label }}"
+                           {% if field.value %}checked{% endif %}
+                           class="w-4 h-4 accent-indigo-500 bg-gray-900 border border-gray-700 cursor-pointer">
+                    <label for="{{ field.id_for_label }}"
+                           class="text-xs uppercase tracking-widest text-gray-500 cursor-pointer select-none">
+                        Remember me
+                    </label>
+                </div>
+            {% else %}
+                <div class="mb-4">
+                    <label class="block text-xs uppercase tracking-widest text-gray-600 mb-1">
+                        {{ field.label }}
+                    </label>
+                    <input type="{{ field.field.widget.input_type }}"
+                           name="{{ field.html_name }}"
+                           id="{{ field.id_for_label }}"
+                           {% if field.value %}value="{{ field.value }}"{% endif %}
+                           class="w-full bg-gray-900 border border-gray-800 focus:border-gray-600 outline-none px-3 py-2 text-sm text-gray-200 transition"
+                           autocomplete="{{ field.html_name }}">
+                    {% if field.errors %}
+                    <p class="text-xs text-red-400 mt-1">{{ field.errors|join:", " }}</p>
+                    {% endif %}
+                </div>
             {% endif %}
-        </div>
         {% endfor %}
+
         <button type="submit"
             class="w-full border border-indigo-600 hover:bg-indigo-600 text-white text-sm py-2.5 uppercase tracking-widest transition mt-2">
             Log in →
         </button>
     </form>
-    <p class="text-xs text-gray-600 mt-6 text-center">
-        No account?
-        <a href="{% url 'account_signup' %}" class="text-gray-400 hover:text-white transition">Sign up</a>
-    </p>
+
+    <div class="mt-6 flex flex-col gap-2 text-center">
+        <a href="{% url 'account_reset_password' %}"
+           class="text-xs text-gray-600 hover:text-white transition">
+            Forgot your password?
+        </a>
+        <p class="text-xs text-gray-600">
+            No account?
+            <a href="{% url 'account_signup' %}" class="text-gray-400 hover:text-white transition">Sign up</a>
+        </p>
+    </div>
+
 </div>
 {% endblock %}

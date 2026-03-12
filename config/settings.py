@@ -199,6 +199,9 @@ CKEDITOR_5_CONFIGS = {
 CKEDITOR_5_FILE_STORAGE = 'django.core.files.storage.FileSystemStorage'
 
 # ── Logging ────────────────────────────────────────────────────────────────────
+LOG_DIR = BASE_DIR / 'logs'
+LOG_DIR.mkdir(exist_ok=True)
+
 LOGGING = {
     'version': 1,
     'disable_existing_loggers': False,
@@ -215,7 +218,7 @@ LOGGING = {
         },
         'file': {
             'class': 'logging.FileHandler',
-            'filename': BASE_DIR / 'logs' / 'hub.log',
+            'filename': LOG_DIR / 'hub.log',
             'formatter': 'verbose',
         },
     },
