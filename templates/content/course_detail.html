@@ -1,0 +1,137 @@
+{% extends "base.html" %}
+{% load content_tags %}
+{% load cache %}
+
+{% block title %}{{ item.title }} — The Hub{% endblock %}
+{% block meta_description %}{{ item.excerpt }}{% endblock %}
+{% block og_title %}{{ item.title }}{% endblock %}
+{% block og_description %}{{ item.excerpt }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}{% if item.thumbnail %}{{ request.scheme }}://{{ request.get_host }}{{ item.thumbnail.url }}{% endif %}{% endblock %}
+{% block twitter_title %}{{ item.title }}{% endblock %}
+{% block twitter_description %}{{ item.excerpt }}{% endblock %}
+{% block twitter_image %}{% if item.thumbnail %}{{ request.scheme }}://{{ request.get_host }}{{ item.thumbnail.url }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-gray-600 mb-6 uppercase tracking-widest">
+        <a href="/" class="hover:text-white transition">Hub</a>
+        <span>/</span>
+        {% if item.category %}
+        <a href="/?category={{ item.category.slug }}" class="hover:text-white transition">{{ item.category.name }}</a>
+        <span>/</span>
+        {% endif %}
+        <span class="text-gray-500 truncate">{{ item.title|truncatechars:40 }}</span>
+    </div>
+
+    <!-- Header -->
+    <div class="border-b border-gray-800 pb-6 mb-6">
+        <div class="flex items-center gap-3 mb-1">
+            {% if item.category %}
+            <span class="text-[10px] uppercase tracking-widest text-indigo-400">{{ item.category.name }}</span>
+            {% endif %}
+            <span class="text-[10px] uppercase tracking-widest text-gray-700 border border-gray-800 px-2 py-0.5">Course</span>
+        </div>
+        <h1 class="text-2xl sm:text-3xl font-bold text-white mt-1 mb-3 leading-tight">{{ item.title }}</h1>
+        <p class="text-sm text-gray-500">{{ item.created_at|date:"F j, Y" }}</p>
+    </div>
+
+    <!-- Thumbnail -->
+    {% if item.thumbnail %}
+    <img src="{% if item.thumbnail %}{{ item.thumbnail.url }}{% else %}https://picsum.photos/600/400{% endif %}" alt="{{ item.title }}"
+        loading="eager" fetchpriority="high"
+        class="w-full max-h-72 object-cover mb-8 border border-gray-800">
+    {% endif %}
+
+    <!-- Intro video -->
+    {% if item.intro_video_url %}
+    <div class="mb-8 border border-gray-800">
+        {% with url=item.intro_video_url %}
+        {% if 'youtube.com' in url or 'youtu.be' in url %}
+            <div style="position:relative;padding-bottom:56.25%;height:0;overflow:hidden;">
+                <iframe src="{{ url|youtube_embed }}"
+                        style="position:absolute;top:0;left:0;width:100%;height:100%;"
+                        frameborder="0" allowfullscreen></iframe>
+            </div>
+        {% else %}
+            <a href="{{ url }}" target="_blank" rel="noopener"
+               class="flex items-center gap-3 p-4 text-sm text-gray-400 hover:text-white hover:bg-gray-900 transition">
+                <span class="text-indigo-500">&#9654;</span> Watch intro video
+            </a>
+        {% endif %}
+        {% endwith %}
+    </div>
+    {% endif %}
+
+    <!-- Body -->
+    {% cache 900 post_body item.pk item.updated_at %}
+        <div class="ck-content">
+            {{ item.body|safe }}
+        </div>
+    {% endcache %}
+
+    {# ── External resource / paywall ── #}
+    {% if item.external_resource_url %}
+        {% if item.is_free %}
+            {# Free course — show CTA directly #}
+            <div class="mt-10 border border-indigo-900 bg-indigo-950/40 p-6">
+                <p class="text-xs uppercase tracking-widest text-indigo-400 mb-3">Resource</p>
+                <a href="{{ item.external_resource_url }}" target="_blank" rel="noopener noreferrer"
+                   class="inline-block border border-indigo-600 hover:bg-indigo-600 text-white text-sm px-6 py-2.5 uppercase tracking-widest transition">
+                    {{ item.external_resource_label|default:"Go to resource →" }}
+                </a>
+            </div>
+
+        {% elif is_enrolled %}
+            {# Paid + enrolled — show CTA #}
+            <div class="mt-10 border border-indigo-900 bg-indigo-950/40 p-6">
+                <div class="flex items-center gap-2 mb-3">
+                    <span class="text-xs uppercase tracking-widest text-indigo-400">Resource</span>
+                    <span class="text-[10px] uppercase tracking-widest border border-green-800 text-green-500 px-2 py-0.5">Unlocked</span>
+                </div>
+                <a href="{{ item.external_resource_url }}" target="_blank" rel="noopener noreferrer"
+                   class="inline-block border border-indigo-600 hover:bg-indigo-600 text-white text-sm px-6 py-2.5 uppercase tracking-widest transition">
+                    {{ item.external_resource_label|default:"Go to resource →" }}
+                </a>
+            </div>
+
+        {% else %}
+            {# Paid + not enrolled — paywall #}
+            <div class="mt-10 border border-gray-800 p-6">
+                <p class="text-xs uppercase tracking-widest text-gray-600 mb-1">Locked Resource</p>
+                <p class="text-sm text-gray-400 mb-4">
+                    This resource is available after purchasing this course for
+                    <span class="text-white font-semibold">₦{{ item.price|floatformat:0 }}</span>.
+                </p>
+
+                {% if user.is_authenticated %}
+                    <a href="{% url 'content:payment_select' item.slug %}"
+                       class="inline-block border border-gray-600 hover:border-white text-gray-300 hover:text-white text-sm px-6 py-2.5 uppercase tracking-widest transition">
+                        Purchase access →
+                    </a>
+                {% else %}
+                    <p class="text-xs text-gray-600 mb-3">You need an account to purchase.</p>
+                    <div class="flex gap-3">
+                        <a href="{% url 'account_login' %}?next={{ request.path }}"
+                           class="inline-block border border-gray-700 hover:border-white text-gray-400 hover:text-white text-xs px-5 py-2.5 uppercase tracking-widest transition">
+                            Log in
+                        </a>
+                        <a href="{% url 'account_signup' %}?next={{ request.path }}"
+                           class="inline-block border border-indigo-700 hover:bg-indigo-700 text-indigo-400 hover:text-white text-xs px-5 py-2.5 uppercase tracking-widest transition">
+                            Create account
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        {% endif %}
+    {% endif %}
+
+    <!-- Back -->
+    <div class="mt-12 pt-6 border-t border-gray-800">
+        <a href="/" class="text-xs uppercase tracking-widest text-gray-600 hover:text-white transition">&larr; Back to all content</a>
+    </div>
+
+</div>
+{% endblock %}

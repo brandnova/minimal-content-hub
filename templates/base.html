@@ -1,0 +1,229 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="{% static 'css/tailwind.css' %}">
+    <link rel="stylesheet" href="{% static 'css/ckeditor5.css' %}">
+
+    <title>{% block title %}The Hub{% endblock %}</title>
+    <meta name="description" content="{% block meta_description %}Guides, courses and strategies to help you grow online.{% endblock %}">
+
+    <meta property="og:title" content="{% block og_title %}The Hub{% endblock %}">
+    <meta property="og:description" content="{% block og_description %}Guides, courses and strategies to help you grow online.{% endblock %}">
+    <meta property="og:type" content="{% block og_type %}website{% endblock %}">
+    <meta property="og:url" content="{{ request.build_absolute_uri }}">
+    <meta property="og:image" content="{% block og_image %}{% endblock %}">
+    <meta property="og:site_name" content="The Hub">
+
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="{% block twitter_title %}The Hub{% endblock %}">
+    <meta name="twitter:description" content="{% block twitter_description %}Guides, courses and strategies to help you grow online.{% endblock %}">
+    <meta name="twitter:image" content="{% block twitter_image %}{% endblock %}">
+
+    <style>
+        /* ── CKEditor rendered content ── */
+        .ck-content { color: #cbd5e1; line-height: 1.8; }
+        .ck-content h2 { font-size: 1.4rem; font-weight: 700; margin: 2rem 0 .6rem; color: #f1f5f9; letter-spacing: -.01em; }
+        .ck-content h3 { font-size: 1.1rem; font-weight: 600; margin: 1.5rem 0 .4rem; color: #e2e8f0; }
+        .ck-content p  { margin-bottom: 1rem; }
+        .ck-content a  { color: #a78bfa; text-decoration: underline; text-underline-offset: 3px; }
+        .ck-content ul, .ck-content ol { padding-left: 1.4rem; margin-bottom: 1rem; }
+        .ck-content li { margin-bottom: .3rem; }
+        .ck-content blockquote {
+            border-left: 3px solid #6366f1;
+            padding: .6rem 1rem;
+            margin: 1.2rem 0;
+            color: #94a3b8;
+            background: #1e1e2e;
+        }
+        .ck-content img { max-width: 100%; margin: 1rem 0; }
+
+        /* ── Code blocks — high contrast fix ── */
+        .ck-content pre,
+        .ck-content code {
+            font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+            font-size: .85rem;
+        }
+        .ck-content pre {
+            background: #0d0d14 !important;
+            border: 1px solid #2d2d3d;
+            border-left: 3px solid #6366f1;
+            padding: 1rem 1.25rem;
+            margin: 1.2rem 0;
+            overflow-x: auto;
+            color: #e2e8f0 !important;
+            line-height: 1.65;
+        }
+        .ck-content code {
+            background: #1a1a2e;
+            color: #a5f3fc !important;
+            padding: .15rem .4rem;
+            border: 1px solid #2d2d3d;
+        }
+        .ck-content pre code {
+            background: transparent !important;
+            border: none;
+            padding: 0;
+            color: #e2e8f0 !important;
+        }
+
+        /* ── Media embeds ── */
+        .ck-content figure.media { margin: 1.5rem 0; }
+        .ck-content .media { position: relative; padding-bottom: 56.25%; height: 0; overflow: hidden; }
+        .ck-content .media iframe { position: absolute; top: 0; left: 0; width: 100%; height: 100%; }
+
+        /* ── Scrollbar ── */
+        ::-webkit-scrollbar { width: 6px; height: 6px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #374151; }
+        .scrollbar-none { -ms-overflow-style: none; scrollbar-width: none; }
+        .scrollbar-none::-webkit-scrollbar { display: none; }
+    </style>
+
+    {% block extra_head %}{% endblock %}
+</head>
+<body class="bg-gray-950 text-gray-300 min-h-screen font-sans flex flex-col">
+
+    <!-- ── NAV ── -->
+    <header class="border-b border-gray-800 bg-gray-950 sticky top-0 z-50">
+
+        <!-- ── Top row: logo + auth ── -->
+        <div class="max-w-6xl mx-auto px-4 h-12 flex items-center justify-between gap-4">
+            <a href="/" class="text-sm font-bold text-white tracking-widest uppercase shrink-0">
+                {{ site.site_name }}
+            </a>
+
+            <!-- Auth buttons — always visible -->
+            <div class="flex items-center gap-2 shrink-0">
+                {% if user.is_authenticated %}
+                    <a href="{% url 'content:profile' %}"
+                    class="text-xs uppercase tracking-widest text-gray-500 hover:text-white transition">
+                        Profile
+                    </a>
+                    <span class="text-gray-800">|</span>
+                    <a href="{% url 'account_logout' %}"
+                    class="text-xs uppercase tracking-widest text-gray-600 hover:text-white transition">
+                        Log out
+                    </a>
+                {% else %}
+                    <a href="{% url 'account_login' %}"
+                    class="text-xs uppercase tracking-widest text-gray-500 hover:text-white transition">
+                        Log in
+                    </a>
+                    <a href="{% url 'account_signup' %}"
+                    class="text-xs uppercase tracking-widest border border-gray-700 px-3 py-1 text-gray-400 hover:text-white hover:border-gray-500 transition">
+                        Sign up
+                    </a>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- ── Category strip: horizontal scroll on all screen sizes ── -->
+        <div class="border-t border-gray-800/60">
+            <div class="max-w-6xl mx-auto px-4">
+                <nav class="flex items-center overflow-x-auto scrollbar-none gap-0 -mb-px">
+                    <a href="/"
+                    class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-widest whitespace-nowrap
+                            {% if not request.GET.category and request.path == '/' %}text-white border-b border-white{% else %}text-gray-600 border-b border-transparent hover:text-gray-300{% endif %}
+                            transition">
+                        All
+                    </a>
+                    {% for cat in all_categories %}
+                    <a href="/?category={{ cat.slug }}"
+                    class="shrink-0 px-3 py-2 text-[11px] uppercase tracking-widest whitespace-nowrap
+                            {% if request.GET.category == cat.slug %}text-white border-b border-white{% else %}text-gray-600 border-b border-transparent hover:text-gray-300{% endif %}
+                            transition">
+                        {{ cat.name }}
+                    </a>
+                    {% endfor %}
+                </nav>
+            </div>
+        </div>
+
+    </header>
+
+    <!-- ── MAIN ── -->
+    <main class="max-w-6xl mx-auto px-4 py-8 w-full flex-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- ── FOOTER ── -->
+    <footer class="border-t border-gray-800 mt-auto">
+        <div class="max-w-6xl mx-auto px-4 py-8">
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-8 mb-8">
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-white font-bold mb-3">{{ site.site_name }}</p>
+                    <p class="text-xs text-gray-500 leading-relaxed">
+                        Strategies, guides and courses for building income online — curated by
+                        {% if site.tiktok_handle %}
+                        <a href="https://tiktok.com/@{{ site.tiktok_handle }}" target="_blank" rel="noopener"
+                        class="text-gray-400 hover:text-white transition">@{{ site.tiktok_handle }}</a>.
+                        {% endif %}
+                    </p>
+                </div>
+
+                <div>
+                    <p class="text-xs uppercase tracking-widest text-gray-400 font-semibold mb-3">Explore</p>
+                    <ul class="space-y-2">
+                        <li><a href="/" class="text-xs text-gray-500 hover:text-white transition">All content</a></li>
+                        {% for cat in all_categories %}
+                        <li><a href="/?category={{ cat.slug }}" class="text-xs text-gray-500 hover:text-white transition">{{ cat.name }}</a></li>
+                        {% endfor %}
+                    </ul>
+                </div>
+
+                <div>
+                    {% if not site.tiktok_handle or not site.instagram_handle or not site.youtube_handle %}
+                    <p class="text-xs uppercase tracking-widest text-gray-400 font-semibold mb-3">Connect</p>
+                    {% endif %}
+                    <ul class="space-y-2">
+                        {% if site.tiktok_handle %}
+                        <li>
+                            <a href="https://tiktok.com/@{{ site.tiktok_handle }}" target="_blank" rel="noopener"
+                            class="text-xs text-gray-500 hover:text-white transition flex items-center gap-2">
+                                <span class="w-4 text-center">↗</span> TikTok
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if site.instagram_handle %}
+                        <li>
+                            <a href="https://instagram.com/{{ site.instagram_handle }}" target="_blank" rel="noopener"
+                            class="text-xs text-gray-500 hover:text-white transition flex items-center gap-2">
+                                <span class="w-4 text-center">↗</span> Instagram
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if site.youtube_handle %}
+                        <li>
+                            <a href="https://youtube.com/@{{ site.youtube_handle }}" target="_blank" rel="noopener"
+                            class="text-xs text-gray-500 hover:text-white transition flex items-center gap-2">
+                                <span class="w-4 text-center">↗</span> YouTube
+                            </a>
+                        </li>
+                        {% endif %}
+                        {% if site.contact_email %}
+                        <li>
+                            <a href="mailto:{{ site.contact_email }}"
+                            class="text-xs text-gray-500 hover:text-white transition flex items-center gap-2">
+                                <span class="w-4 text-center">@</span> {{ site.contact_email }}
+                            </a>
+                        </li>
+                        {% endif %}
+                    </ul>
+                </div>
+            </div>
+
+            <div class="border-t border-gray-800 pt-4 flex flex-col sm:flex-row items-center justify-between gap-2">
+                <p class="text-xs text-gray-600">© {% now "Y" %} {{ site.site_name }}. All rights reserved.</p>
+                <p class="text-xs text-gray-700">Built for creators who build.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="{% static 'js/htmx.min.js' %}"></script>
+    {% block extra_scripts %}{% endblock %}
+</body>
+</html>

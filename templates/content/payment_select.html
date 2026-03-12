@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block title %}Purchase — {{ item.title }}{% endblock %}
+
+{% block content %}
+<div class="max-w-md mx-auto">
+
+    <div class="mb-8 border-b border-gray-800 pb-6">
+        <p class="text-xs uppercase tracking-widest text-gray-600 mb-1">Purchase access</p>
+        <h1 class="text-xl font-bold text-white leading-tight">{{ course.title }}</h1>
+        <p class="text-2xl font-bold text-white mt-3">₦{{ course.price|floatformat:0 }}</p>
+    </div>
+
+    <p class="text-xs uppercase tracking-widest text-gray-500 mb-4">Choose payment method</p>
+
+    <form method="POST" action="{% url 'content:payment_initiate' course.slug %}">
+        {% csrf_token %}
+
+        <div class="flex flex-col gap-3 mb-6">
+            <label class="flex items-center gap-4 border border-gray-800 hover:border-gray-600 p-4 cursor-pointer transition has-[:checked]:border-indigo-600">
+                <input type="radio" name="gateway" value="paystack" class="accent-indigo-500" required>
+                <div>
+                    <p class="text-sm font-semibold text-white">Paystack</p>
+                    <p class="text-xs text-gray-500">Card, bank transfer, USSD</p>
+                </div>
+            </label>
+
+            <label class="flex items-center gap-4 border border-gray-800 hover:border-gray-600 p-4 cursor-pointer transition has-[:checked]:border-indigo-600">
+                <input type="radio" name="gateway" value="flutterwave" class="accent-indigo-500">
+                <div>
+                    <p class="text-sm font-semibold text-white">Flutterwave</p>
+                    <p class="text-xs text-gray-500">Card, bank, mobile money</p>
+                </div>
+            </label>
+        </div>
+
+        <button type="submit"
+            class="w-full border border-indigo-600 hover:bg-indigo-600 text-white text-sm py-3 uppercase tracking-widest transition">
+            Pay ₦{{ course.price|floatformat:0 }} →
+        </button>
+    </form>
+
+    <a href="{% url 'content:course_detail' course.slug %}"
+       class="block text-center mt-4 text-xs text-gray-600 hover:text-white transition uppercase tracking-widest">
+        Cancel
+    </a>
+</div>
+{% endblock %}

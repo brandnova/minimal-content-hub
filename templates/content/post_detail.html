@@ -1,0 +1,58 @@
+{% extends "base.html" %}
+{% load static %}
+{% load cache %}
+
+{% block title %}{{ item.title }} — The Hub{% endblock %}
+{% block meta_description %}{{ item.excerpt }}{% endblock %}
+{% block og_title %}{{ item.title }}{% endblock %}
+{% block og_description %}{{ item.excerpt }}{% endblock %}
+{% block og_type %}article{% endblock %}
+{% block og_image %}{% if item.thumbnail %}{{ request.scheme }}://{{ request.get_host }}{{ item.thumbnail.url }}{% endif %}{% endblock %}
+{% block twitter_title %}{{ item.title }}{% endblock %}
+{% block twitter_description %}{{ item.excerpt }}{% endblock %}
+{% block twitter_image %}{% if item.thumbnail %}{{ request.scheme }}://{{ request.get_host }}{{ item.thumbnail.url }}{% endif %}{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+
+    <!-- Breadcrumb -->
+    <div class="flex items-center gap-2 text-xs text-gray-600 mb-6 uppercase tracking-widest">
+        <a href="/" class="hover:text-white transition">Hub</a>
+        <span>/</span>
+        {% if item.category %}
+        <a href="/?category={{ item.category.slug }}" class="hover:text-white transition">{{ item.category.name }}</a>
+        <span>/</span>
+        {% endif %}
+        <span class="text-gray-500 truncate">{{ item.title|truncatechars:40 }}</span>
+    </div>
+
+    <!-- Header -->
+    <div class="border-b border-gray-800 pb-6 mb-6">
+        {% if item.category %}
+        <span class="text-[10px] uppercase tracking-widest text-violet-400">{{ item.category.name }}</span>
+        {% endif %}
+        <h1 class="text-2xl sm:text-3xl font-bold text-white mt-1 mb-3 leading-tight">{{ item.title }}</h1>
+        <p class="text-sm text-gray-500">{{ item.created_at|date:"F j, Y" }}</p>
+    </div>
+
+    <!-- Thumbnail -->
+    {% if item.thumbnail %}
+    <img src="{% if item.thumbnail %}{{ item.thumbnail.url }}{% else %}https://picsum.photos/600/400{% endif %}" alt="{{ item.title }}"
+        loading="eager" fetchpriority="high"
+        class="w-full max-h-72 object-cover mb-8 border border-gray-800">
+    {% endif %}
+
+    <!-- Body -->
+    {% cache 900 post_body item.pk item.updated_at %}
+        <div class="ck-content">
+            {{ item.body|safe }}
+        </div>
+    {% endcache %}
+
+    <!-- Back -->
+    <div class="mt-12 pt-6 border-t border-gray-800">
+        <a href="/" class="text-xs uppercase tracking-widest text-gray-600 hover:text-white transition">&larr; Back to all content</a>
+    </div>
+
+</div>
+{% endblock %}

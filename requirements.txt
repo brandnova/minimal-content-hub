@@ -1,0 +1,11 @@
+asgiref==3.11.1
+brotli==1.2.0
+Django==5.2
+django-allauth==65.15.0
+django-ckeditor-5==0.2.20
+django-cleanup==9.0.0
+Faker==40.8.0
+pillow==12.1.1
+python-dotenv==1.2.2
+sqlparse==0.5.5
+whitenoise==6.12.0
