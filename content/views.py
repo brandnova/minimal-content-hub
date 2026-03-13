@@ -19,7 +19,8 @@ from .payments import (
     paystack_initialize, paystack_verify,
     flutterwave_initialize, flutterwave_verify,
 )
-
+import logging
+logger = logging.getLogger('content')
 
 ITEMS_PER_PAGE = 12
 
@@ -192,7 +193,8 @@ def payment_initiate(request, slug):
                 callback_url=callback_url,
                 course_title=course.title,
             )
-    except Exception:
+    except Exception as e:
+        logger.error(f"Payment initiation failed for {gateway} ref={reference}: {e}")
         enrollment.status = 'failed'
         enrollment.save()
         messages.error(request, "Could not reach payment provider. Please try again.")
