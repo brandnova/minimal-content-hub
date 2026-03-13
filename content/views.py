@@ -56,28 +56,57 @@ def _build_feed(query='', category_slug=''):
 
 # ── List ───────────────────────────────────────────────────────────────────
 
-@vary_on_cookie                   # logged-in users see their own state
-@cache_page(60 * 5)               # 5 minutes
+# @vary_on_cookie                   # logged-in users see their own state
+# @cache_page(60 * 5)               # 5 minutes
 def content_list(request):
     query         = request.GET.get('q', '').strip()
     category_slug = request.GET.get('category', '').strip()
+    tab           = request.GET.get('tab', 'posts')   # 'posts' or 'courses'
     page_number   = request.GET.get('page', 1)
 
-    feed      = _build_feed(query, category_slug)
+    search_filter = Q()
+    if query:
+        search_filter = Q(title__icontains=query) | Q(excerpt__icontains=query)
+
+    base_filters = {'is_published': True}
+    if category_slug:
+        base_filters['category__slug'] = category_slug
+
+    if tab == 'courses':
+        feed = (
+            Course.objects
+            .filter(**base_filters)
+            .filter(search_filter)
+            .select_related('category')
+            .annotate(content_type=Value('course', output_field=CharField()))
+        )
+    else:
+        tab = 'posts'   # normalise any invalid value
+        feed = (
+            Post.objects
+            .filter(**base_filters)
+            .filter(search_filter)
+            .select_related('category')
+            .annotate(content_type=Value('post', output_field=CharField()))
+        )
+
     paginator = Paginator(feed, ITEMS_PER_PAGE)
     page_obj  = paginator.get_page(page_number)
 
     selected_category = Category.objects.filter(slug=category_slug).first() if category_slug else None
 
     context = {
-        'page_obj': page_obj,
-        'query': query,
+        'page_obj':          page_obj,
+        'query':             query,
         'selected_category': selected_category,
-        'category_slug': category_slug,
+        'category_slug':     category_slug,
+        'tab':               tab,
     }
 
     if request.headers.get('HX-Request'):
-        return render(request, 'content/partials/cards.html', context)
+        # Return the right partial depending on active tab
+        partial = 'content/partials/course_cards.html' if tab == 'courses' else 'content/partials/post_rows.html'
+        return render(request, partial, context)
 
     return render(request, 'content/list.html', context)
 

@@ -1,0 +1,47 @@
+{% for item in page_obj %}
+<a href="{% url 'content:post_detail' item.slug %}"
+   class="post-row group my-1 flex w-full bg-gray-900 border-b border-gray-800 hover:bg-gray-800/60 transition-colors duration-150 overflow-hidden">
+
+    {% if item.thumbnail %}
+        <img src="{{ item.thumbnail.url }}" alt="{{ item.title }}"
+             width="240" height="140"
+             loading="lazy"
+             class="w-40 sm:w-48 h-full min-h-[7rem] max-h-36 object-cover flex-shrink-0 grayscale-[20%] group-hover:grayscale-0 transition self-stretch">
+    {% else %}
+        <div class="w-40 sm:w-48 min-h-[7rem] flex-shrink-0 bg-gray-800 border-r border-gray-700 flex items-center justify-center self-stretch">
+            <span class="text-[10px] uppercase tracking-widest text-gray-700">Post</span>
+        </div>
+    {% endif %}
+
+    <div class="flex flex-col flex-1 p-3 sm:p-4 gap-1.5 min-w-0">
+        <div class="flex items-center gap-3 text-[10px] uppercase tracking-widest flex-wrap">
+            {% if item.category %}
+            <span class="text-violet-400">{{ item.category.name }}</span>
+            {% endif %}
+            <span class="text-gray-600">{{ item.created_at|date:"M j, Y" }}</span>
+        </div>
+
+        <h3 class="text-sm sm:text-base font-semibold text-gray-100 leading-snug group-hover:text-white transition line-clamp-2">
+            {{ item.title }}
+        </h3>
+
+        <p class="text-xs sm:text-sm text-gray-500 leading-relaxed line-clamp-2 hidden sm:block">
+            {{ item.excerpt }}
+        </p>
+
+        <span class="text-[10px] uppercase tracking-widest text-violet-500 group-hover:text-white transition mt-auto pt-1">
+            Read &rarr;
+        </span>
+    </div>
+</a>
+{% endfor %}
+
+{% if page_obj.has_next %}
+<div class="post-row flex justify-center items-center py-6 border-b border-gray-800"
+     hx-get="?page={{ page_obj.next_page_number }}&q={{ query }}&category={{ category_slug }}&tab=posts"
+     hx-trigger="intersect once"
+     hx-target="this"
+     hx-swap="outerHTML">
+    <span class="text-xs uppercase tracking-widest text-gray-700 animate-pulse">Loading</span>
+</div>
+{% endif %}
